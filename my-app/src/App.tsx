@@ -14,9 +14,8 @@ function App() {
   return (
     <div className="App">
         <header className="App-header">
-        <Maze width={5} height={5} mazeData={mazeData} />
-      </header>
-       
+        <Maze width={30} height={30} mazeData={mazeData} />
+      </header> 
     </div>
   );
 }
