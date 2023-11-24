@@ -32,29 +32,29 @@ This project is in line with the principles and theories taught in your RL cours
 
 
 
-##Choosing Backend endpoint:
+## Choosing Backend endpoint:
 Both Flask and FastAPI are modern web frameworks for building APIs in Python, but they cater to slightly different needs and preferences. Here's a breakdown of their pros and cons:
 
-###Flask
-####Pros:
+### Flask
+#### Pros:
 
 Simplicity: Flask is known for being simple and easy to get started with. Its minimalistic and unopinionated approach makes it a go-to choice for small to medium projects.
 Flexibility: Because it imposes little boilerplate, Flask allows for more control over the components you include in your application.
 Extensive Ecosystem: Flask has a mature ecosystem with a wide range of extensions for adding functionality such as ORM, form validation, and more.
 Widely Used: It has been around for a longer time, which means there's a large community, plenty of resources, and good support.
-####Cons:
+#### Cons:
 
 Performance: Flask uses a synchronous model, which can be less efficient under load compared to asynchronous frameworks, especially for I/O bound operations.
 More Boilerplate for APIs: You may end up writing more code for tasks like request validation, serialization, and documentation because these aren't included out of the box.
-###FastAPI
-####Pros:
+### FastAPI
+#### Pros:
 
 Performance: FastAPI is built on Starlette and Pydantic, which means it's asynchronous and generally faster than Flask, especially for I/O bound tasks.
 Automatic API Documentation: FastAPI automatically generates documentation (with Swagger/UI and ReDoc) for your API, which can be a huge timesaver.
 Data Validation and Serialization: Pydantic integration provides powerful data validation and serialization out of the box.
 Modern Python Features: FastAPI encourages the use of modern Python features like type hints, which improves code quality and editor support.
 Built for APIs: It's designed to create APIs quickly and efficiently, with a lot of features such as dependency injection, WebSocket support, and background tasks built-in.
-####Cons:
+#### Cons:
 
 Relative Newcomer: FastAPI is newer, so while it's growing rapidly, the community is smaller, and there may be fewer resources and extensions compared to Flask.
 Asynchronous Learning Curve: If you're not familiar with async programming in Python, there can be a learning curve to using FastAPI effectively.
