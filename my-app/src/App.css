@@ -1,6 +1,7 @@
 
 .App {
   text-align: center;
+  font-family: 'Rubik', sans-serif;
 }
 
 
@@ -13,11 +14,6 @@
   }
 
 
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
@@ -33,12 +29,5 @@
   font-family: 'Rubik', sans-serif;}
 
 
-.App-link {
-  color: #61dafb;
-}
 
-.container {
-  background-color: #b0c4de; 
-  position: relative;
-  overflow: hidden; 
-}
+
