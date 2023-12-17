@@ -1,13 +1,18 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
 
 .App {
   text-align: center;
 }
 
+
+
 @font-face {
-  font-family: "Rubik Lines", sans-serif;}
+    font-family: 'Rubik';
+    font-style: normal;
+    font-weight: 400;
+    src: url('/public/fonts/Rubik_Lines/RubikLines-Regular.ttf') format('truetype');
+  }
+
+
 
 .App-logo {
   height: 40vmin;
@@ -21,15 +26,19 @@
 }
 
 .App-header {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(50px + 2vmin);
-  font-family: "Rubik Lines", sans-serif;
-}
+  font-size: calc(20px + 2vmin);
+  font-family: 'Rubik', sans-serif;}
+
 
 .App-link {
   color: #61dafb;
+}
+
+.container {
+  background-color: #b0c4de; 
+  position: relative;
+  overflow: hidden; 
 }

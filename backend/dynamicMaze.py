@@ -1,4 +1,3 @@
-# dynamicMaze.py
 import numpy as np
 import random
 from queue import Queue
@@ -41,17 +40,29 @@ def update_maze(maze, agent_pos, goal_pos):
 
     return maze, agent_pos
 
-def generate_dynamic_maze(size=(10, 10), start=(0, 0), goal=(9, 9)):
-    maze = np.zeros(size)
-    agent_pos = start
-    goal_pos = goal
-    maze, agent_pos = update_maze(maze, agent_pos, goal_pos)
-    print(maze)
-    print(agent_pos)
-    return maze
+def generate_dynamic_maze(size=(10, 10), start=(0, 0), goal=(9, 9), complexity=0.75):
+    maze = np.zeros(size, dtype=int)
+    maze[range(start[0], goal[0] + 1), start[1]] = 0
+    maze[goal[0], range(start[1], goal[1] + 1)] = 0
+    walls_added = 0
+    total_walls = int(complexity * size[0] * size[1])
 
+    while walls_added < total_walls:
+        x, y = random.randint(0, size[0] - 1), random.randint(0, size[1] - 1)
 
-# This code will not run when imported, only when executed directly
+        if (x, y) != start and (x, y) != goal and maze[x, y] == 0:
+            maze[x, y] = 1  
+            if not is_solvable(maze, start, goal):
+                maze[x, y] = 0  
+            else:
+                walls_added += 1
+    maze[start] = 0
+    maze[goal] = 0
+
+    return maze, start, goal  
+
 if __name__ == '__main__':
-    maze = generate_dynamic_maze()
-    print(maze)
+    maze, start, goal = generate_dynamic_maze()
+    print("Maze:\n", maze)
+    print("Start:", start)
+    print("Goal:", goal)
