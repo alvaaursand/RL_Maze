@@ -1,8 +1,8 @@
 import pygame
 from random import choice, randrange
 
-RES = WIDTH, HEIGHT = 1202, 902
-TILE = 30
+RES = WIDTH, HEIGHT = 1037, 722
+TILE = 45
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 class Cell:
@@ -16,13 +16,13 @@ class Cell:
         x, y = self.x * TILE, self.y * TILE
 
         if self.walls['top']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y), (x + TILE, y), self.thickness)
+            pygame.draw.line(sc, pygame.Color('#455945'), (x, y), (x + TILE, y), self.thickness)
         if self.walls['right']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y), (x + TILE, y + TILE), self.thickness)
+            pygame.draw.line(sc, pygame.Color('#455945'), (x + TILE, y), (x + TILE, y + TILE), self.thickness)
         if self.walls['bottom']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y + TILE), (x , y + TILE), self.thickness)
+            pygame.draw.line(sc, pygame.Color('#455945'), (x + TILE, y + TILE), (x , y + TILE), self.thickness)
         if self.walls['left']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y + TILE), (x, y), self.thickness)
+            pygame.draw.line(sc, pygame.Color('#455945'), (x, y + TILE), (x, y), self.thickness)
 
     def get_rects(self):
         rects = []
@@ -59,6 +59,11 @@ class Cell:
         if left and not left.visited:
             neighbors.append(left)
         return choice(neighbors) if neighbors else False
+    
+    # allows for the removal of a specific wall.
+    def remove_wall(self, wall):
+        if wall in self.walls:
+            self.walls[wall] = False
 
 
 def remove_walls(current, next):
@@ -80,7 +85,7 @@ def remove_walls(current, next):
 def generate_maze():
     grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
     current_cell = grid_cells[0]
-    array = []
+    stack = []
     break_count = 1
 
     while break_count != len(grid_cells):
@@ -89,9 +94,17 @@ def generate_maze():
         if next_cell:
             next_cell.visited = True
             break_count += 1
-            array.append(current_cell)
+            stack.append(current_cell)
             remove_walls(current_cell, next_cell)
             current_cell = next_cell
-        elif array:
-            current_cell = array.pop()
+        elif stack:
+            current_cell = stack.pop()
+
+    # Remove the left wall of the start cell and the right wall of the goal cell
+    start_cell = grid_cells[0]  # Assuming the start cell is the first cell
+    goal_cell = grid_cells[-1]  # Assuming the goal cell is the last cell
+    Cell.remove_wall(start_cell,'left')
+    Cell.remove_wall(goal_cell,'right')
+
+
     return grid_cells
