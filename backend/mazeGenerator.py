@@ -1,8 +1,8 @@
 import pygame
 from random import choice, randrange
 
-RES = WIDTH, HEIGHT = 1037, 722
-TILE = 45
+RES = WIDTH, HEIGHT = 882, 642
+TILE = 40
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 class Cell:
@@ -103,8 +103,7 @@ def generate_maze():
     # Remove the left wall of the start cell and the right wall of the goal cell
     start_cell = grid_cells[0]  # Assuming the start cell is the first cell
     goal_cell = grid_cells[-1]  # Assuming the goal cell is the last cell
-    Cell.remove_wall(start_cell,'left')
-    Cell.remove_wall(goal_cell,'right')
-
+    start_cell.walls['left'] = False
+    goal_cell.walls['right'] = False
 
     return grid_cells
