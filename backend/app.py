@@ -109,60 +109,31 @@ while True:
             exit()
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = pygame.mouse.get_pos()
-            if button_rect.collidepoint(mouse_pos):
-                if button_rect.collidepoint(mouse_pos) and not training_started:
-                    # Start training in a separate thread
-                    training_started = True
-                    
-                elif training_completed:
-                    # The training has been completed, prepare for solving the maze
-                    print("Training completed!")
-                    """agent_present = True
-                    agent_state = cols * start_cell.y + start_cell.x
-                    agent.maze.current_cell = start_cell"""
+            if button_rect.collidepoint(mouse_pos) and not training_started:
+                # Start training in a separate thread
+                training_started = True
     
     draw_start_and_goal(maze_display)
+    
     if maze_complete:
         for cell in grid_cells:
             cell.draw(maze_display)
+        
         if training_started:
             # Start training in a separate thread
-            #training_started = True
             print("Starting training...")
             training_thread = threading.Thread(target=train_agent_in_thread, args=(agent, training_episodes))
             training_thread.start()
             training_started = False   
             print("Training finished") 
-    
         
-    else:
-        # The rest of the game loop when not training
-        # Draw the maze and handle game logic
-        if not maze_complete:
-            # Maze generation logic here
-            maze_display.blit(lightsaber_image, (current_cell.x * TILE, current_cell.y * TILE))
-            # Dynamic elements
-            current_cell.visited = True
-            next_cell = current_cell.check_neighbors(grid_cells)
-            
-            if next_cell:
-                next_cell.visited = True
-                stack.append(current_cell)
-                remove_walls(current_cell, next_cell)
-                current_cell = next_cell
-            elif stack:
-                current_cell = stack.pop()
-                if current_cell == start_cell:
-                    maze_complete = True
-                    print("Maze generation complete!")
-            # Draw the cells and update mazeMatrix
-            for cell in grid_cells:
-                cell.draw(maze_display)
-                # Update the mazeMatrix to mark visited cells
-                if cell.visited:
-                    mazeMatrix[cell.y][cell.x] = 1    
-
-        if agent_present:
+        elif training_completed:
+                    # The training has been completed, prepare for solving the maze
+                    agent_present = True
+                    agent_state = cols * start_cell.y + start_cell.x
+                    agent.maze.current_cell = start_cell
+        
+        elif agent_present:
             # Get the agent's next action
             agent_action = agent.act(agent_state)
             new_state, reward, done, _ = agent.maze.step(agent_action)
@@ -180,17 +151,36 @@ while True:
                 print("Agent has reached the goal!")
                 agent_present = False  # Stop the agent's movement
                 # Perform any additional actions needed when the goal is reached
-        
-        # Other game logic and drawing functions
+                    
     
         
-                
+    else:
+        # Maze generation logic here
+        maze_display.blit(lightsaber_image, (current_cell.x * TILE, current_cell.y * TILE))
+        # Dynamic elements
+        current_cell.visited = True
+        next_cell = current_cell.check_neighbors(grid_cells)
+        
+        if next_cell:
+            next_cell.visited = True
+            stack.append(current_cell)
+            remove_walls(current_cell, next_cell)
+            current_cell = next_cell
+        elif stack:
+            current_cell = stack.pop()
+            if current_cell == start_cell:
+                maze_complete = True
+                print("Maze generation complete!")
+        # Draw the cells and update mazeMatrix
+        for cell in grid_cells:
+            cell.draw(maze_display)
+            # Update the mazeMatrix to mark visited cells
+            if cell.visited:
+                mazeMatrix[cell.y][cell.x] = 1    
 
-        """if training_completed and not agent_present:
-            reset_maze()"""
             
 
-        # Update the display with everything that was drawn
+    # Update the display with everything that was drawn
     DISPLAY.blit(maze_display, (maze_x, maze_y))
     draw_button(DISPLAY, button_position, button_size, button_color)
         
