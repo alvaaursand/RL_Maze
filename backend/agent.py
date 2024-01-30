@@ -14,7 +14,6 @@ class CuriosityAgent:
         self.epsilon_decay = 0.995
         self.min_epsilon = 0.01
         self.learning_rate = learning_rate
-        
         self.maze = Move(maze.grid_cells, maze.cols, maze.rows, maze.start_cell, maze.goal_cell)
 
         # Initialize a logger
@@ -74,18 +73,23 @@ class CuriosityAgent:
         self.state = new_state
         return new_state 
 
+
+    
     def train(self, episodes):
         for episode in range(episodes):
             state = self.maze.reset()
             total_reward = 0
             done = False
             num_steps = 0
-            state = self.maze.reset()
-
+            print(f"Starting Episode {episode + 1}")
 
             while not done:
+                print(f"  Inside loop, State: {state}")
+
                 action = self.act(state)
                 next_state, reward, done, _ = self.maze.step(action)
+                print(f"  Action: {action}, Next State: {next_state}, Reward: {reward}, Done: {done}")
+
                 self.update(state, action, reward, next_state, done)
 
                 state = next_state
@@ -96,8 +100,8 @@ class CuriosityAgent:
 
             self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
 
-
         print("Training complete.")
+
         
 
     def evaluate(self, episodes):
