@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from maze import Maze
+from movement import Move
 
 target_update_frequency = 100 
 
@@ -15,7 +15,7 @@ class CuriosityAgent:
         self.min_epsilon = 0.01
         self.learning_rate = learning_rate
         
-        self.maze = Maze(maze.grid_cells, maze.cols, maze.rows, maze.start_cell, maze.goal_cell)
+        self.maze = Move(maze.grid_cells, maze.cols, maze.rows, maze.start_cell, maze.goal_cell)
 
         # Initialize a logger
         self.logger = logging.getLogger("CuriosityAgent")
@@ -74,10 +74,8 @@ class CuriosityAgent:
         self.state = new_state
         return new_state 
 
-    episodes= 100
-            
     def train(self, episodes):
-        for _ in range(episodes):
+        for episode in range(episodes):
             state = self.maze.reset()
             total_reward = 0
             done = False
@@ -94,12 +92,13 @@ class CuriosityAgent:
                 total_reward += reward
                 num_steps += 1
 
-            self.logger.info("Episode {episode + 1}: Total Reward = {total_reward}, Steps = {num_steps}, Goal Reached = {done}")
+            print(f"Episode {episode + 1}: Total Reward = {total_reward}, Steps = {num_steps}, Goal Reached = {done}")
 
             self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
 
 
-        self.logger.info("Training complete.")
+        print("Training complete.")
+        
 
     def evaluate(self, episodes):
         total_rewards = []
@@ -118,5 +117,5 @@ class CuriosityAgent:
             total_rewards.append(total_reward)
 
         average_reward = np.mean(total_rewards)
-        self.logger.info("Average reward over {episodes} evaluation episodes: {average_reward}")
+        print("Average reward over {episodes} evaluation episodes: {average_reward}")
         return average_reward

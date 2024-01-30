@@ -1,6 +1,6 @@
 from mazeGenerator import Cell
 
-class Maze:
+class Move:
     def __init__(self, grid_cells, cols, rows, start_cell=None, goal_cell=None):
         # Ensure that grid_cells is a list of Cell instances
         assert all(isinstance(cell, Cell) for cell in grid_cells), "grid_cells must be a list of Cell instances"
