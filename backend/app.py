@@ -110,7 +110,7 @@ def draw_start_and_goal(maze_display):
 training_progress = ""
 training_started = False
 training_completed = False
-training_episodes = 20
+training_episodes = 100
 
 def train_agent_in_thread(agent, episodes):
     global training_started, training_completed, training_progress
@@ -172,7 +172,6 @@ while True:
         
         button_color = button_hover_color if button_rect.collidepoint(pygame.mouse.get_pos()) else button_color
         draw_button(DISPLAY, button_position, button_size, button_color) 
-        
         if training_started:
             print(mazeMatrix)
             # Start training in a separate thread
@@ -183,12 +182,23 @@ while True:
             
         elif training_completed:
                     # The training has been completed, prepare for solving the maze
+                    agent_present = True
+                    agent_state = cols * start_cell.y + start_cell.x
+                    agent.maze.current_cell = start_cell
                     agent_action = agent.act(agent_state)
                     new_state, reward, done, _ = agent.maze.step(agent_action)
                     agent.update(agent_state, agent_action, reward, new_state, done)
+
                     agent_state = new_state
         
         if agent_present:
+            # Get the agent's next action
+            agent_action = agent.act(agent_state)
+            new_state, reward, done, _ = agent.maze.step(agent_action)
+            agent.update(agent_state, agent_action, reward, new_state, done)
+
+            agent_state = new_state
+
             # Get agent's current position for GUI
             agent_cell_x, agent_cell_y = agent_state % cols, agent_state // cols
 

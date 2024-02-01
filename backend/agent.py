@@ -4,14 +4,14 @@ from maze import Maze
 from grid import *
 
 target_update_frequency = 100 
-
+        
 class CuriosityAgent:
     def __init__(self, state_size, action_size, maze, gamma=0.99, learning_rate=0.01):
         self.state_size = state_size
         self.action_size = action_size
         self.q_table = np.zeros((state_size, action_size)) 
         self.gamma = gamma
-        self.epsilon = 1.0  
+        self.epsilon = 0.95  
         self.epsilon_decay = 0.995
         self.min_epsilon = 0.01
         self.learning_rate = learning_rate
