@@ -12,7 +12,7 @@ class CuriosityAgent:
         self.q_table = np.zeros((state_size, action_size)) 
         self.gamma = gamma
         self.epsilon = 0.95  
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.99
         self.min_epsilon = 0.01
         self.learning_rate = learning_rate
         self.maze = Maze(maze.grid_cells, maze.cols, maze.rows, maze.start_cell, maze.goal_cell)
@@ -113,9 +113,6 @@ class CuriosityAgent:
         td_error = target_q_value - q_value
         self.q_table[state, action] += self.learning_rate * td_error
 
-        # Decay epsilon after each update
-        self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
-
         # Mark the cell as visited
         # Note: This should be the index in the grid, not the x, y coordinates
         self.maze.grid_cells[next_state].visited = True
@@ -138,7 +135,7 @@ class CuriosityAgent:
     def train(self, episodes, max_steps_per_episode=5000): 
         for episode in range(episodes):
             state = self.maze.reset()
-            self.maze.current_cell = self.maze.start_cell  # Set agent to start position
+            #self.maze.current_cell = self.maze.start_cell  # Set agent to start position
             total_reward = 0
             done = False
             num_steps = 0
@@ -152,27 +149,51 @@ class CuriosityAgent:
                 state = next_state
                 total_reward += reward
                 num_steps += 1
-                
-                # Check if the agent has reached the goal
-                if self.maze.current_cell == self.maze.goal_cell:
-                    print(f"Goal reached in {num_steps} steps.")
-                    done = True  # Stop the agent from moving after reaching the goal
+
+                if done:  # Goal reached or episode terminated
+                    print(f"Goal reached in {num_steps} steps or episode ended.")
                     break
 
-            # After an episode is finished or the goal is reached, log the results
             print(f"Episode {episode + 1}: Total Reward = {total_reward}, Steps = {num_steps}, Goal Reached = {done}")
 
-            # Decay epsilon after each episode
+            # Update Epsilon only here, after each episode
             self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
 
-        print("Training complete.")  
-        
-        
-    def follow_optimal_path(self):
+            print(f"Epsilon updated to {self.epsilon}")
+
+        print("Training complete.")
+
+
+    def evaluate(self, state, episodes):
+        total_rewards = []
+        for _ in range(episodes):
+            state = self.maze.reset()
+            done = False
+            total_reward = 0
+            
+
+            while not done:
+                action = self.act(state, explore=False)
+                next_state, reward, done = self.maze.step(action)
+                total_reward += reward
+                state = next_state
+
+            total_rewards.append(total_reward)
+
+        average_reward = np.mean(total_rewards)
+        print("Average reward over {episodes} evaluation episodes: {average_reward}")
+        return average_reward
+    
+    
+    
+    """ def follow_optimal_path(self):
         state = self.maze.start_cell.y * self.grid_width + self.maze.start_cell.x
         path = []
         
         while state != self.maze.goal_cell.y * self.grid_width + self.maze.goal_cell.x:
+            # Update epsilon based on epsilon decay
+            self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
+
             # Get valid actions from the current state
             valid_actions = self.get_valid_actions(state)
 
@@ -196,23 +217,4 @@ class CuriosityAgent:
             state = next_state
 
         return path
-
-    def evaluate(self, state, episodes):
-        total_rewards = []
-        for _ in range(episodes):
-            state = self.maze.reset()
-            done = False
-            total_reward = 0
-            
-
-            while not done:
-                action = self.act(state, explore=False)
-                next_state, reward, done = self.maze.step(action)
-                total_reward += reward
-                state = next_state
-
-            total_rewards.append(total_reward)
-
-        average_reward = np.mean(total_rewards)
-        print(f"Average reward over {episodes} evaluation episodes: {average_reward}")
-        return average_reward
+"""
