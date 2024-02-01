@@ -33,36 +33,45 @@ class CuriosityAgent:
     def calculate_distance_to_goal(self, x, y):
         goal_x, goal_y = self.maze.goal_position
         return abs(x - goal_x) + abs(y - goal_y)
+    def coordinates_to_state(self, x, y):
+        return y * self.maze.cols + x
 
 
     def act(self, state):
-        # Calculate the valid actions from the current state
         valid_actions = self.get_valid_actions(state)
-
-        # If there are no valid actions, return None or handle it as needed
         if not valid_actions:
             return None
 
-        # Get unvisited and visited legal moves
-        unvisited_moves = []
-        visited_moves = []
-        for action in valid_actions:
-            new_x, new_y = self.calculate_new_position(state, action)
-            if not self.maze.grid_cells[new_y * self.grid_width + new_x].visited:
-                unvisited_moves.append(action)
-            else:
-                visited_moves.append(action)
-                
-        # Exploration vs exploitation with a preference for unvisited cells
+        # Get the new positions for all valid actions
+        new_positions = [self.calculate_new_position(state, action) for action in valid_actions]
+        # Convert new positions to states
+        new_states = [self.coordinates_to_state(*pos) for pos in new_positions]
+
+        # Exploration vs exploitation
         if np.random.rand() < self.epsilon:
-            # If there are unvisited moves, choose randomly among them, otherwise choose any valid move
-            return np.random.choice(unvisited_moves) if unvisited_moves else np.random.choice(valid_actions)
+            # Explore: prioritize unvisited neighbor cells
+            unvisited_neighbor_moves = [action for action, new_state in zip(valid_actions, new_states) 
+                                        if not self.maze.grid_cells[new_state].visited]
+            return np.random.choice(unvisited_neighbor_moves) if unvisited_neighbor_moves else np.random.choice(valid_actions)
         else:
-            # Choose the best action based on Q-values, with a preference for unvisited moves
-            q_values = {action: self.q_table[state, action] for action in unvisited_moves} or \
-                       {action: self.q_table[state, action] for action in valid_actions}
-            return max(q_values, key=q_values.get)
-    
+            # Exploit: choose the best action based on Q-values, excluding actions with Q-value of 0
+            q_values = {action: self.q_table[state, action] for action in valid_actions}
+            non_zero_q_values = {action: q for action, q in q_values.items() if q != 0}
+            
+            if non_zero_q_values:
+                max_q_value = max(non_zero_q_values.values())
+                # Among actions with the maximum Q-value, prioritize unvisited neighbor cells
+                max_actions = [action for action, value in q_values.items() if value == max_q_value]
+                unvisited_neighbor_max_actions = [action for action in max_actions 
+                                                if not self.maze.grid_cells[self.coordinates_to_state(*self.calculate_new_position(state, action))].visited]
+                return np.random.choice(unvisited_neighbor_max_actions) if unvisited_neighbor_max_actions else np.random.choice(max_actions)
+            else:
+                # If all Q-values are zero or negative, prefer unvisited neighbors
+                unvisited_neighbor_moves = [action for action, new_state in zip(valid_actions, new_states) 
+                                            if not self.maze.grid_cells[new_state].visited]
+                return np.random.choice(unvisited_neighbor_moves) if unvisited_neighbor_moves else np.random.choice(valid_actions)
+
+
     def calculate_new_position(self, state, action):
         # Translate action into new x and y coordinates
         x, y = self.state_to_coordinates(state)
@@ -127,9 +136,9 @@ class CuriosityAgent:
         self.q_table[state, action] += self.learning_rate * td_error
 
         # Mark the cell as visited
-        # Note: This should be the index in the grid, not the x, y coordinates
         self.maze.grid_cells[next_state].visited = True
-
+        
+        
     def move(self, action):
         if action == 0:  
             new_state = self.maze.move_up()
@@ -157,7 +166,6 @@ class CuriosityAgent:
             while not done and num_steps < max_steps_per_episode:
                 action = self.act(state)
                 next_state, reward, done, _ = self.maze.step(action)
-
                 self.update(state, action, reward, next_state, done)
                 state = next_state
                 total_reward += reward
@@ -173,29 +181,34 @@ class CuriosityAgent:
             self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
 
             print(f"Epsilon updated to {self.epsilon}")
+        
 
         print("Training complete.")
 
 
     def evaluate(self, state, episodes):
         total_rewards = []
+        original_epsilon = self.epsilon  # Save the original epsilon value
+        self.epsilon = 0  # Set epsilon to 0 to turn off exploration
+
         for _ in range(episodes):
             state = self.maze.reset()
             done = False
             total_reward = 0
-            
 
             while not done:
-                action = self.act(state, explore=False)
-                next_state, reward, done = self.maze.step(action)
+                action = self.act(state)  # No need for explore=False
+                next_state, reward, done, _ = self.maze.step(action)  # Ensure to unpack 4 return values
                 total_reward += reward
                 state = next_state
 
             total_rewards.append(total_reward)
 
+        self.epsilon = original_epsilon  # Reset epsilon back to its original value after evaluation
         average_reward = np.mean(total_rewards)
-        print("Average reward over {episodes} evaluation episodes: {average_reward}")
+        print(f"Average reward over {episodes} evaluation episodes: {average_reward}")
         return average_reward
+
     
     
     
