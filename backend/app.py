@@ -217,7 +217,6 @@ while True:
 
             agent_state = new_state"""
             
-            print("complete!")
             training_completed = False
             #print(optimal_path)
             # The training has been completed, prepare for solving the maze

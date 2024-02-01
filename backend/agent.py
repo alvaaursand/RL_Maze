@@ -3,7 +3,6 @@ import numpy as np
 from maze import Maze
 from grid import *
 
-target_update_frequency = 100 
         
 class CuriosityAgent:
     def __init__(self, state_size, action_size, maze, gamma=0.99, learning_rate=0.01):
@@ -11,8 +10,8 @@ class CuriosityAgent:
         self.action_size = action_size
         self.q_table = np.zeros((state_size, action_size)) 
         self.gamma = gamma
-        self.epsilon = 0.95  
-        self.epsilon_decay = 0.99
+        self.epsilon = 1  
+        self.epsilon_decay = 0.995
         self.min_epsilon = 0.01
         self.learning_rate = learning_rate
         self.maze = Maze(maze.grid_cells, maze.cols, maze.rows, maze.start_cell, maze.goal_cell)
@@ -30,6 +29,11 @@ class CuriosityAgent:
      
     def state_to_coordinates(self, state):
         return state % self.maze.cols, state // self.maze.cols
+    
+    def calculate_distance_to_goal(self, x, y):
+        goal_x, goal_y = self.maze.goal_position
+        return abs(x - goal_x) + abs(y - goal_y)
+
 
     def act(self, state):
         # Calculate the valid actions from the current state
@@ -92,15 +96,24 @@ class CuriosityAgent:
 
     def update(self, state, action, reward, next_state, done):
         # Calculate the new coordinates based on the current state and action
+        current_x, current_y = self.state_to_coordinates(state)
+        next_x, next_y = self.state_to_coordinates(next_state)
+
+
         new_x, new_y = self.calculate_new_position(state, action)
         valid_actions = self.get_valid_actions(state)
+
+        current_distance = self.calculate_distance_to_goal(current_x, current_y)
+        next_distance = self.calculate_distance_to_goal(next_x, next_y)
+        if next_distance < current_distance:
+            reward += 0.2
         
         if not valid_actions:
             reward = -1  # Penalize the agent for getting stuck
         # Determine reward based on whether the goal is reached
         else: 
             if (new_x, new_y) == self.maze.goal_position:
-                reward = 1  # Reward for reaching the goal
+                reward = 3  # Reward for reaching the goal
             elif self.maze.grid_cells[new_y * self.grid_width + new_x].visited:
                 reward = -0.2  # Small negative reward for visiting a cell that has already been visited
             else:

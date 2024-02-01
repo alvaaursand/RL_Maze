@@ -66,10 +66,10 @@ class Maze:
             pass
         next_state = self.grid_cells.index(self.current_cell)
         self.current_cell = self.grid_cells[next_state] 
-        reward = 0 
+        reward = -0.1
         done = self.current_cell == self.goal_cell
         if done: 
-            reward = 1
+            reward = 3
 
         return next_state, reward, done, self.current_cell
 
