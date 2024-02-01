@@ -135,8 +135,7 @@ class CuriosityAgent:
 
 
     
-    def train(self, episodes, max_steps_per_episode=8000):
-        
+    def train(self, episodes, max_steps_per_episode=5000): 
         for episode in range(episodes):
             state = self.maze.reset()
             self.maze.current_cell = self.maze.start_cell  # Set agent to start position
@@ -158,6 +157,7 @@ class CuriosityAgent:
                 if self.maze.current_cell == self.maze.goal_cell:
                     print(f"Goal reached in {num_steps} steps.")
                     done = True  # Stop the agent from moving after reaching the goal
+                    break
 
             # After an episode is finished or the goal is reached, log the results
             print(f"Episode {episode + 1}: Total Reward = {total_reward}, Steps = {num_steps}, Goal Reached = {done}")
@@ -214,5 +214,5 @@ class CuriosityAgent:
             total_rewards.append(total_reward)
 
         average_reward = np.mean(total_rewards)
-        print("Average reward over {episodes} evaluation episodes: {average_reward}")
+        print(f"Average reward over {episodes} evaluation episodes: {average_reward}")
         return average_reward

@@ -55,6 +55,8 @@ agent = CuriosityAgent(cols * rows, 4, Maze(grid_cells, cols, rows, start_cell, 
 agent_state = cols * start_cell.y + start_cell.x
 training_completed_event = threading.Event()
 training_thread = None
+thread_lock = threading.Lock()
+
 
 
 # Define button properties
@@ -112,22 +114,23 @@ def draw_start_and_goal(maze_display):
     pygame.draw.polygon(maze_display, pygame.Color('white'), start_arrow)
     pygame.draw.polygon(maze_display, pygame.Color('white'), goal_arrow)
 
-training_progress = ""
 training_started = False
 training_completed = False
 training_episodes = 100
 optimal_path = []
 
 def train_agent_in_thread(agent, episodes, completion_event):
-    global training_started, training_completed, training_progress
-    training_started = True
+    global training_started, training_completed
+    with thread_lock:  # Acquire the lock
+        training_started = True
     print("In thread")
     # Call the train method of the agent
     agent.train(episodes)
     print(agent.q_table)
     optimal_path = agent.follow_optimal_path()
-    training_completed = True
-    training_started = False
+    with thread_lock:  # Release the lock
+        training_completed = True
+        training_started = False
     completion_event.set()
     
 while True:
