@@ -53,6 +53,9 @@ mazeMatrix = [[0] * cols for _ in range(rows)]
 
 agent = CuriosityAgent(cols * rows, 4, Maze(grid_cells, cols, rows, start_cell, goal_cell))
 agent_state = cols * start_cell.y + start_cell.x
+training_completed_event = threading.Event()
+training_thread = None
+
 
 # Define button properties
 button_color = pygame.Color('#455945')  # Button color
@@ -112,7 +115,7 @@ training_started = False
 training_completed = False
 training_episodes = 100
 
-def train_agent_in_thread(agent, episodes):
+def train_agent_in_thread(agent, episodes, completion_event):
     global training_started, training_completed, training_progress
     training_started = True
     print("In thread")
@@ -121,6 +124,9 @@ def train_agent_in_thread(agent, episodes):
     print(agent.q_table)
     training_completed = True
     training_started = False
+    completion_event.set()
+
+
     
 while True:
     DISPLAY.blit(bg, (0, 0))
@@ -136,7 +142,19 @@ while True:
             if button_rect.collidepoint(mouse_pos) and not training_started:
                 # Start training in a separate thread
                 training_started = True
+                training_thread = threading.Thread(target=train_agent_in_thread, args=(agent, training_episodes, training_completed_event))
+                training_thread.start()
     
+    #new part
+    if training_thread and training_completed_event.is_set():
+        # Block until training thread finishes
+        training_thread.join()
+        # Reset the flag
+        training_started = False
+        training_thread = None  # Reset the thread variable
+        # Reset the event for future use
+        training_completed_event.clear()
+
     if not maze_complete:
         # Dynamic elements
         current_cell.visited = True
@@ -176,7 +194,7 @@ while True:
             print(mazeMatrix)
             # Start training in a separate thread
             print("Starting training...")
-            training_thread = threading.Thread(target=train_agent_in_thread, args=(agent, training_episodes))
+            training_thread = threading.Thread(target=train_agent_in_thread, args=(agent, training_episodes, training_completed_event))
             training_thread.start()
             training_started = False   
             
@@ -187,7 +205,8 @@ while True:
                     agent.maze.current_cell = start_cell
                     agent_action = agent.act(agent_state)
                     new_state, reward, done, _ = agent.maze.step(agent_action)
-                    agent.update(agent_state, agent_action, reward, new_state, done)
+                    agent.epsilon = 0 
+                    #agent.update(agent_state, agent_action, reward, new_state, done) #kommenterer ut for redundant
 
                     agent_state = new_state
         
@@ -204,6 +223,8 @@ while True:
 
             # Update GUI with the current grid and agent position
             gui.update_gui(grid_cells, (agent_cell_x, agent_cell_y))
+
+            pygame.time.delay(100) #adding delay on agent
                               
             
     # Update the display with everything that was drawn

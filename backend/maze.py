@@ -64,8 +64,8 @@ class Maze:
         else:
             # If the move is not legal, don't change the cell
             pass
-
         next_state = self.grid_cells.index(self.current_cell)
+        self.current_cell = self.grid_cells[next_state] 
         reward = 0 
         done = self.current_cell == self.goal_cell
         if done: 
