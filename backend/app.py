@@ -127,7 +127,6 @@ def train_agent_in_thread(agent, episodes, completion_event):
     # Call the train method of the agent
     agent.train(episodes)
     print(agent.q_table)
-    optimal_path = agent.follow_optimal_path()
     with thread_lock:  # Release the lock
         training_completed = True
         training_started = False
