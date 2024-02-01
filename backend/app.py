@@ -125,7 +125,7 @@ def train_agent_in_thread(agent, episodes, completion_event):
     # Call the train method of the agent
     agent.train(episodes)
     print(agent.q_table)
-    optimal_path = agent.follow_optimal_path()
+    #optimal_path = agent.follow_optimal_path()
     training_completed = True
     training_started = False
     completion_event.set()
@@ -215,6 +215,7 @@ while True:
             agent_state = new_state"""
             
             print("complete!")
+            training_completed = False
             #print(optimal_path)
             # The training has been completed, prepare for solving the maze
             
