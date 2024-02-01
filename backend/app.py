@@ -1,9 +1,30 @@
+import numpy as np
 from agent import CuriosityAgent
-from mazeGenerator import *
-from movement import *
+from grid import *
+from maze import *
 import threading
 #get the window size of this computer
 
+class GUI:
+    def __init__(self, display, maze_display, tile_size, agent_image):
+        self.display = display
+        self.maze_display = maze_display
+        self.tile_size = tile_size
+        self.agent_image = agent_image
+
+    def update_gui(self, grid, agent_position):
+        self.maze_display.fill(pygame.Color('black'))
+        for cell in grid:
+            cell.draw(self.maze_display)
+
+        # Only draw the agent if agent_position is not None
+        if agent_position is not None:
+            agent_x, agent_y = agent_position  # Unpack the coordinates here
+            self.maze_display.blit(self.agent_image, (agent_x * self.tile_size, agent_y * self.tile_size))
+        
+        self.display.blit(self.maze_display, (maze_x, maze_y))
+        pygame.display.flip()
+        
 LARGE_RES = LARGER_WIDTH, LARGER_HEIGHT = 1202, 902
 
 pygame.init()
@@ -14,6 +35,7 @@ bg = pygame.transform.scale(bg, LARGE_RES)
 maze_display = pygame.Surface(RES)
 
 clock = pygame.time.Clock()
+
 
 maze_complete = False
 agent_present = False
@@ -29,7 +51,7 @@ stack = []
 # Initialize the mazeMatrix
 mazeMatrix = [[0] * cols for _ in range(rows)]
 
-agent = CuriosityAgent(cols * rows, 4, Move(grid_cells, cols, rows, start_cell, goal_cell))
+agent = CuriosityAgent(cols * rows, 4, Maze(grid_cells, cols, rows, start_cell, goal_cell))
 agent_state = cols * start_cell.y + start_cell.x
 
 # Define button properties
@@ -53,6 +75,9 @@ lightsaber_image = pygame.transform.scale(lightsaber_image, (TILE, TILE))
 agent_image = pygame.image.load('./images/agent.png')
 agent_image = pygame.transform.scale(agent_image, (TILE, TILE))
 
+# Create an instance of GUI
+gui = GUI(DISPLAY, maze_display, TILE, agent_image)
+
 def draw_agent(surface, cell, color=(0, 0, 255), radius=TILE//4):
     x, y = cell.x * TILE + TILE // 2, cell.y * TILE + TILE // 2
     pygame.draw.circle(surface, color, (x, y), radius)
@@ -61,12 +86,12 @@ def draw_button(surface, position, size, color):
     pygame.draw.rect(surface, color, (*position, *size))
     surface.blit(button_image, (position[0] + size[0] // 2 - button_image.get_width() // 2, position[1] + size[1] // 2 - button_image.get_height() // 2))
 
-def reset_maze():
+"""def reset_maze():
     global grid_cells, mazeMatrix, maze_complete
     maze_complete = True
     grid_cells = generate_maze()  # Generate a new maze
     mazeMatrix = [[0] * cols for _ in range(rows)]  # Reset the maze matrix
-
+"""
     
 def draw_start_and_goal(maze_display):
     start_cell.walls['left'] = False
@@ -93,8 +118,7 @@ def train_agent_in_thread(agent, episodes):
     print("In thread")
     # Call the train method of the agent
     agent.train(episodes)
-
-    print("Training completed.")
+    print(agent.q_table)
     training_completed = True
     training_started = False
     
@@ -102,7 +126,7 @@ while True:
     DISPLAY.blit(bg, (0, 0))
     maze_display.fill(pygame.Color('black'))
     mouse_click = False
-
+    
     # Event handling loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -113,50 +137,7 @@ while True:
                 # Start training in a separate thread
                 training_started = True
     
-    draw_start_and_goal(maze_display)
-    
-    if maze_complete:
-        for cell in grid_cells:
-            cell.draw(maze_display)
-        
-        if training_started:
-            # Start training in a separate thread
-            print("Starting training...")
-            training_thread = threading.Thread(target=train_agent_in_thread, args=(agent, training_episodes))
-            training_thread.start()
-            training_started = False   
-            print("Training finished") 
-        
-        elif training_completed:
-                    # The training has been completed, prepare for solving the maze
-                    agent_present = True
-                    agent_state = cols * start_cell.y + start_cell.x
-                    agent.maze.current_cell = start_cell
-        
-        elif agent_present:
-            # Get the agent's next action
-            agent_action = agent.act(agent_state)
-            new_state, reward, done, _ = agent.maze.step(agent_action)
-            agent.update(agent_state, agent_action, reward, new_state, done)
-
-            agent_state = new_state
-
-            # Update agent's position for rendering
-            agent_cell_x = agent_state % cols
-            agent_cell_y = agent_state // cols
-            agent_x, agent_y = agent_cell_x * TILE, agent_cell_y * TILE
-            maze_display.blit(agent_image, (agent_x, agent_y))
-
-            if done:  # The agent has reached the goal
-                print("Agent has reached the goal!")
-                agent_present = False  # Stop the agent's movement
-                # Perform any additional actions needed when the goal is reached
-                    
-    
-        
-    else:
-        # Maze generation logic here
-        maze_display.blit(lightsaber_image, (current_cell.x * TILE, current_cell.y * TILE))
+    if not maze_complete:
         # Dynamic elements
         current_cell.visited = True
         next_cell = current_cell.check_neighbors(grid_cells)
@@ -170,21 +151,55 @@ while True:
             current_cell = stack.pop()
             if current_cell == start_cell:
                 maze_complete = True
+                agent_present = True
                 print("Maze generation complete!")
         # Draw the cells and update mazeMatrix
         for cell in grid_cells:
             cell.draw(maze_display)
             # Update the mazeMatrix to mark visited cells
             if cell.visited:
-                mazeMatrix[cell.y][cell.x] = 1    
+                mazeMatrix[cell.y][cell.x] = 1
+        
+        maze_display.blit(lightsaber_image, (current_cell.x * TILE, current_cell.y * TILE))
 
+                
+    else:
+        
+        for cell in grid_cells:
+            cell.draw(maze_display)
+
+        draw_start_and_goal(maze_display)
+        
+        button_color = button_hover_color if button_rect.collidepoint(pygame.mouse.get_pos()) else button_color
+        draw_button(DISPLAY, button_position, button_size, button_color) 
+        
+        if training_started:
+            print(mazeMatrix)
+            # Start training in a separate thread
+            print("Starting training...")
+            training_thread = threading.Thread(target=train_agent_in_thread, args=(agent, training_episodes))
+            training_thread.start()
+            training_started = False   
             
+        elif training_completed:
+                    # The training has been completed, prepare for solving the maze
+                    agent_action = agent.act(agent_state)
+                    new_state, reward, done, _ = agent.maze.step(agent_action)
+                    agent.update(agent_state, agent_action, reward, new_state, done)
+                    agent_state = new_state
+        
+        if agent_present:
+            # Get agent's current position for GUI
+            agent_cell_x, agent_cell_y = agent_state % cols, agent_state // cols
 
+            # Update GUI with the current grid and agent position
+            gui.update_gui(grid_cells, (agent_cell_x, agent_cell_y))
+                              
+            
     # Update the display with everything that was drawn
     DISPLAY.blit(maze_display, (maze_x, maze_y))
-    draw_button(DISPLAY, button_position, button_size, button_color)
         
     pygame.display.flip()
-    clock.tick(30)  # Speed to visualize the generation    
+    clock.tick(50)  # Speed to visualize the generation    
         
  

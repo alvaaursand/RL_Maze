@@ -8,10 +8,11 @@ cols, rows = WIDTH // TILE, HEIGHT // TILE
 class Cell:
     def __init__(self, x, y):
         self.x, self.y = x, y
+        self.legal_moves = []
         self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
         self.visited = False
         self.thickness = 4
-
+    
     def draw(self, sc):
         x, y = self.x * TILE, self.y * TILE
 
@@ -60,29 +61,40 @@ class Cell:
             neighbors.append(left)
         return choice(neighbors) if neighbors else False
     
+    def update_legal_moves(self):
+        self.legal_moves = []
+        if not self.walls['top']:
+            self.legal_moves.append('up')  # Can move up
+        if not self.walls['right']:
+            self.legal_moves.append('right')  # Can move right
+        if not self.walls['bottom']:
+            self.legal_moves.append('down')  # Can move down
+        if not self.walls['left']:
+            self.legal_moves.append('left')  # Can move left
+    
     # allows for the removal of a specific wall.
     def remove_wall(self, wall):
         if wall in self.walls:
             self.walls[wall] = False
-
-
+            self.update_legal_moves()
+            
 def remove_walls(current, next):
     dx = current.x - next.x
     if dx == 1:
-        current.walls['left'] = False
-        next.walls['right'] = False
+        current.remove_wall('left')
+        next.remove_wall('right')
     elif dx == -1:
-        current.walls['right'] = False
-        next.walls['left'] = False
+        current.remove_wall('right')
+        next.remove_wall('left')
     dy = current.y - next.y
     if dy == 1:
-        current.walls['top'] = False
-        next.walls['bottom'] = False
+        current.remove_wall('top')
+        next.remove_wall('bottom')
     elif dy == -1:
-        current.walls['bottom'] = False
-        next.walls['top'] = False
+        current.remove_wall('bottom')
+        next.remove_wall('top')
 
-def generate_maze():
+"""def generate_maze():
     grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
     current_cell = grid_cells[0]
     stack = []
@@ -107,3 +119,4 @@ def generate_maze():
     goal_cell.walls['right'] = False
 
     return grid_cells
+"""

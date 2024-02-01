@@ -1,6 +1,6 @@
-from mazeGenerator import Cell
+from grid import Cell
 
-class Move:
+class Maze:
     def __init__(self, grid_cells, cols, rows, start_cell=None, goal_cell=None):
         # Ensure that grid_cells is a list of Cell instances
         assert all(isinstance(cell, Cell) for cell in grid_cells), "grid_cells must be a list of Cell instances"
@@ -46,14 +46,24 @@ class Move:
             self.current_cell = new_cell
 
     def step(self, action):
-        if action == 0: 
-            self.move_up()
-        elif action == 1: 
-            self.move_right()
-        elif action == 2: 
-            self.move_down()
-        elif action == 3: 
-            self.move_left()
+        # Define action mappings to directions
+        action_directions = {0: 'up', 1: 'right', 2: 'down', 3: 'left'}
+        current_direction = action_directions.get(action)
+
+        # Check if the action is in the current cell's legal moves
+        if current_direction in self.current_cell.legal_moves:
+            # Perform the action
+            if action == 0: 
+                self.move_up()
+            elif action == 1: 
+                self.move_right()
+            elif action == 2: 
+                self.move_down()
+            elif action == 3: 
+                self.move_left()
+        else:
+            # If the move is not legal, don't change the cell
+            pass
 
         next_state = self.grid_cells.index(self.current_cell)
         reward = 0 
