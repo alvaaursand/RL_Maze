@@ -48,7 +48,7 @@ class CuriosityAgent:
                 unvisited_moves.append(action)
             else:
                 visited_moves.append(action)
-
+                
         # Exploration vs exploitation with a preference for unvisited cells
         if np.random.rand() < self.epsilon:
             # If there are unvisited moves, choose randomly among them, otherwise choose any valid move
@@ -86,19 +86,25 @@ class CuriosityAgent:
             valid_actions.append(2)  # Append the action index for 'down'
         if 'left' in current_cell.legal_moves:  # Move left
             valid_actions.append(3)  # Append the action index for 'left'
-
+        
         return valid_actions
 
 
     def update(self, state, action, reward, next_state, done):
         # Calculate the new coordinates based on the current state and action
         new_x, new_y = self.calculate_new_position(state, action)
+        valid_actions = self.get_valid_actions(state)
         
+        if not valid_actions:
+            reward = -1  # Penalize the agent for getting stuck
         # Determine reward based on whether the goal is reached
-        if (new_x, new_y) == self.maze.goal_position:
-            reward = 1  # Reward for reaching the goal
-        else:
-            reward = -0.1  # Small negative reward for each step to encourage efficiency
+        else: 
+            if (new_x, new_y) == self.maze.goal_position:
+                reward = 1  # Reward for reaching the goal
+            elif self.maze.grid_cells[new_y * self.grid_width + new_x].visited:
+                reward = -0.2  # Small negative reward for visiting a cell that has already been visited
+            else:
+                reward = -0.1  # Small negative reward for each step to encourage efficiency
 
         # Update the Q-table with the new state information
         q_value = self.q_table[state, action]
@@ -129,7 +135,7 @@ class CuriosityAgent:
 
 
     
-    def train(self, episodes, max_steps_per_episode=5000):
+    def train(self, episodes, max_steps_per_episode=8000):
         
         for episode in range(episodes):
             state = self.maze.reset()
@@ -159,12 +165,39 @@ class CuriosityAgent:
             # Decay epsilon after each episode
             self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
 
-        print("Training complete.")
-
-
+        print("Training complete.")  
         
+        
+    def follow_optimal_path(self):
+        state = self.maze.start_cell.y * self.grid_width + self.maze.start_cell.x
+        path = []
+        
+        while state != self.maze.goal_cell.y * self.grid_width + self.maze.goal_cell.x:
+            # Get valid actions from the current state
+            valid_actions = self.get_valid_actions(state)
 
-    def evaluate(self, episodes):
+            # Initialize a dictionary to store Q-values for valid actions
+            q_values = {}
+
+            for action in valid_actions:
+                q_values[action] = self.q_table[state, action]
+
+            # Choose the action with the Q-value closest to 0 (minimizing revisiting)
+            action = min(q_values, key=lambda x: abs(q_values[x]))
+
+            # Move to the next state based on the chosen action
+            next_x, next_y = self.calculate_new_position(state, action)
+            next_state = next_y * self.grid_width + next_x
+
+            # Add the chosen action to the path
+            path.append(action)
+
+            # Update the current state
+            state = next_state
+
+        return path
+
+    def evaluate(self, state, episodes):
         total_rewards = []
         for _ in range(episodes):
             state = self.maze.reset()
@@ -173,7 +206,7 @@ class CuriosityAgent:
             
 
             while not done:
-                action = self.act(state)
+                action = self.act(state, explore=False)
                 next_state, reward, done = self.maze.step(action)
                 total_reward += reward
                 state = next_state

@@ -63,7 +63,7 @@ button_hover_color = pygame.Color('white')  # Button color when hovered over
 button_position = (LARGER_WIDTH - 202, 90)  # Adjust as needed
 button_size = (42, 42)  # Width, Height
 button_rect = pygame.Rect(*button_position, *button_size)
-button_image = pygame.image.load('./images/refresh.png')  # Load the button image
+button_image = pygame.image.load('./images/play.png')  # Load the button image
 button_image = pygame.transform.scale(button_image, (30, 30))
 arrow_size = TILE // 3
 
@@ -116,6 +116,7 @@ training_progress = ""
 training_started = False
 training_completed = False
 training_episodes = 100
+optimal_path = []
 
 def train_agent_in_thread(agent, episodes, completion_event):
     global training_started, training_completed, training_progress
@@ -124,11 +125,10 @@ def train_agent_in_thread(agent, episodes, completion_event):
     # Call the train method of the agent
     agent.train(episodes)
     print(agent.q_table)
+    optimal_path = agent.follow_optimal_path()
     training_completed = True
     training_started = False
     completion_event.set()
-
-
     
 while True:
     DISPLAY.blit(bg, (0, 0))
@@ -192,6 +192,7 @@ while True:
         
         button_color = button_hover_color if button_rect.collidepoint(pygame.mouse.get_pos()) else button_color
         draw_button(DISPLAY, button_position, button_size, button_color) 
+        
         if training_started:
             print(mazeMatrix)
             # Start training in a separate thread
@@ -201,16 +202,22 @@ while True:
             training_started = False   
             
         elif training_completed:
-                    # The training has been completed, prepare for solving the maze
-                    agent_present = True
-                    agent_state = cols * start_cell.y + start_cell.x
-                    agent.maze.current_cell = start_cell
-                    agent_action = agent.act(agent_state)
-                    new_state, reward, done, _ = agent.maze.step(agent_action)
-                    agent.epsilon = 0 
-                    #agent.update(agent_state, agent_action, reward, new_state, done) #kommenterer ut for redundant
+            # The training has been completed, prepare for solving the maze
+            #NULL IDE
+            """agent_present = True
+            agent_state = cols * start_cell.y + start_cell.x
+            agent.maze.current_cell = start_cell
+            agent_action = agent.act(agent_state)
+            new_state, reward, done, _ = agent.maze.step(agent_action)
+            agent.epsilon = 0 
+            #agent.update(agent_state, agent_action, reward, new_state, done) #kommenterer ut for redundant
 
-                    agent_state = new_state
+            agent_state = new_state"""
+            
+            print("complete!")
+            #print(optimal_path)
+            # The training has been completed, prepare for solving the maze
+            
         
         if agent_present:
             # Get the agent's next action
