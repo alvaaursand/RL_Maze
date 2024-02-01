@@ -89,6 +89,8 @@ def draw_button(surface, position, size, color):
     pygame.draw.rect(surface, color, (*position, *size))
     surface.blit(button_image, (position[0] + size[0] // 2 - button_image.get_width() // 2, position[1] + size[1] // 2 - button_image.get_height() // 2))
 
+
+
 """def reset_maze():
     global grid_cells, mazeMatrix, maze_complete
     maze_complete = True
@@ -133,6 +135,8 @@ while True:
     maze_display.fill(pygame.Color('black'))
     mouse_click = False
     
+    
+
     # Event handling loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -142,8 +146,6 @@ while True:
             if button_rect.collidepoint(mouse_pos) and not training_started:
                 # Start training in a separate thread
                 training_started = True
-                training_thread = threading.Thread(target=train_agent_in_thread, args=(agent, training_episodes, training_completed_event))
-                training_thread.start()
     
     #new part
     if training_thread and training_completed_event.is_set():
@@ -225,10 +227,13 @@ while True:
             gui.update_gui(grid_cells, (agent_cell_x, agent_cell_y))
 
             pygame.time.delay(100) #adding delay on agent
-                              
+
+
             
     # Update the display with everything that was drawn
     DISPLAY.blit(maze_display, (maze_x, maze_y))
+   
+
         
     pygame.display.flip()
     clock.tick(50)  # Speed to visualize the generation    

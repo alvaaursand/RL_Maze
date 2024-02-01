@@ -129,7 +129,7 @@ class CuriosityAgent:
 
 
     
-    def train(self, episodes, max_steps_per_episode=80000):
+    def train(self, episodes, max_steps_per_episode=5000):
         
         for episode in range(episodes):
             state = self.maze.reset()
