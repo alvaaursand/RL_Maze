@@ -167,7 +167,7 @@ while True:
         for cell in grid_cells:
             cell.draw(maze_display)
 
-        draw_start_and_goal(maze_display)
+        draw_start_and_goal()
         
         button_color = button_hover_color if button_rect.collidepoint(pygame.mouse.get_pos()) else button_color
         draw_button(DISPLAY, button_position, button_size, button_color) 
