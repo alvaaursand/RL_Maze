@@ -3,10 +3,6 @@ from agent import CuriosityAgent
 from grid import *
 from maze import *
 import threading
-import random
-#get the window size of this computer
-
-
 
 class GUI:
     def __init__(self, display, maze_display, tile_size, agent_image):
@@ -40,10 +36,8 @@ maze_display = pygame.Surface(RES)
 
 clock = pygame.time.Clock()
 
-
 maze_complete = False
 agent_present = False
-
 
 # Generate the initial maze grid
 grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
@@ -60,8 +54,6 @@ agent_state = cols * start_cell.y + start_cell.x
 training_completed_event = threading.Event()
 training_thread = None
 thread_lock = threading.Lock()
-
-
 
 # Define button properties
 button_color = pygame.Color('#455945')  # Button color
@@ -94,19 +86,14 @@ def draw_button(surface, position, size, color):
     pygame.draw.rect(surface, color, (*position, *size))
     surface.blit(button_image, (position[0] + size[0] // 2 - button_image.get_width() // 2, position[1] + size[1] // 2 - button_image.get_height() // 2))
 
-
-
-
-
     
-def draw_start_and_goal(maze_display):
+def draw_start_and_goal():
     start_cell.walls['left'] = False
     goal_cell.walls['right'] = False
 
 training_started = False
 training_completed = False
-training_episodes = 2000
-optimal_path = []
+training_episodes = 2500
 
 def train_agent_in_thread(agent, episodes, completion_event):
     global training_started, training_completed
@@ -119,16 +106,13 @@ def train_agent_in_thread(agent, episodes, completion_event):
     with thread_lock:  # Release the lock
         training_completed = True
         training_started = False
-    #optimal_path = agent.follow_optimal_path()
 
-    #agent.evaluate(agent_state, episodes)
     completion_event.set()
     
 while True:
     DISPLAY.blit(bg, (0, 0))
     maze_display.fill(pygame.Color('black'))
     mouse_click = False
-    
     
 
     # Event handling loop
@@ -199,13 +183,12 @@ while True:
         elif training_completed:
             print("Training complete, now solving the maze...")
        
-            # The training has been completed, prepare for solving the maze
-            #NULL IDE
+            # The training has been completed, now solve the maze
             
             agent.solve(gui)
             training_completed = False
             agent_present = False
-            #print(optimal_path)
+    
             # The training has been completed, prepare for solving the maze
         elif agent_present:  
             # Get the agent's next action
@@ -228,16 +211,11 @@ while True:
             text_rect = text.get_rect(center=(gui.maze_display.get_width() // 2, gui.maze_display.get_height() // 2))
             gui.maze_display.blit(text, text_rect)
             
-        
-
-
 
             
     # Update the display with everything that was drawn
     DISPLAY.blit(maze_display, (maze_x, maze_y))
    
-
-        
     pygame.display.flip()
     clock.tick(50)  # Speed to visualize the generation    
         

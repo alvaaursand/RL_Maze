@@ -97,9 +97,6 @@ class Maze:
         next_state = self.grid_cells.index(self.current_cell)
         return next_state, reward, done, self.current_cell
 
-
-
-
     def reset(self):
         self.current_cell = self.start_cell
         for cell in self.grid_cells:

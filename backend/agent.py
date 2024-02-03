@@ -3,8 +3,6 @@ import numpy as np
 from maze import Maze
 from grid import *
 
-
-        
 class CuriosityAgent:
     def __init__(self, state_size, action_size, maze, gamma=0.99, learning_rate=0.1):
         self.state_size = state_size
@@ -40,8 +38,6 @@ class CuriosityAgent:
     def calculate_distance_to_goal(self, x, y):
         goal_x, goal_y = self.maze.goal_position
         return abs(x - goal_x) + abs(y - goal_y)
-    def coordinates_to_state(self, x, y):
-        return y * self.maze.cols + x
 
 
     def act(self, state, explore=True):
@@ -220,7 +216,7 @@ class CuriosityAgent:
             state = self.maze.reset()
         return path
 
-
+# Evaluate the agent's performance
     """def evaluate(self, state, episodes):
         total_rewards = []
         original_epsilon = self.epsilon  # Save the original epsilon value

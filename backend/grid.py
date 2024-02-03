@@ -1,5 +1,5 @@
 import pygame
-from random import choice, randrange
+from random import choice
 
 RES = WIDTH, HEIGHT = 882, 642
 TILE = 40
