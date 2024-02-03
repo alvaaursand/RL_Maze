@@ -40,13 +40,13 @@ class CuriosityAgent:
     def calculate_distance_to_goal(self, x, y):
         goal_x, goal_y = self.maze.goal_position
         return abs(x - goal_x) + abs(y - goal_y)
+    def coordinates_to_state(self, x, y):
+        return y * self.maze.cols + x
 
 
     def act(self, state, explore=True):
         # Calculate the valid actions from the current state
         valid_actions = self.get_valid_actions(state)
-
-        # If there are no valid actions, return None or handle it as needed
         if not valid_actions:
             return None
 
@@ -148,7 +148,6 @@ class CuriosityAgent:
         self.q_table[state, action] += self.learning_rate * td_error
 
         # Mark the cell as visited
-        # Note: This should be the index in the grid, not the x, y coordinates
         self.maze.grid_cells[next_state].visited = True
 
 
@@ -180,7 +179,6 @@ class CuriosityAgent:
             while not done and num_steps < max_steps_per_episode:
                 action = self.act(state)
                 next_state, reward, done, _ = self.maze.step(action)
-
                 self.update(state, action, reward, next_state, done)
                 state = next_state
                 total_reward += reward
@@ -225,11 +223,13 @@ class CuriosityAgent:
 
     """def evaluate(self, state, episodes):
         total_rewards = []
+        original_epsilon = self.epsilon  # Save the original epsilon value
+        self.epsilon = 0  # Set epsilon to 0 to turn off exploration
+
         for _ in range(episodes):
             state = self.maze.reset()
             done = False
             total_reward = 0
-            
 
             while not done:
                 action = self.act(state)
@@ -239,6 +239,7 @@ class CuriosityAgent:
 
             total_rewards.append(total_reward)
 
+        self.epsilon = original_epsilon  # Reset epsilon back to its original value after evaluation
         average_reward = np.mean(total_rewards)
         print(f"Average reward over {episodes} evaluation episodes: {average_reward}")
         return average_reward

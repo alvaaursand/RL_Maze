@@ -120,6 +120,8 @@ def train_agent_in_thread(agent, episodes, completion_event):
         training_completed = True
         training_started = False
     #optimal_path = agent.follow_optimal_path()
+
+    #agent.evaluate(agent_state, episodes)
     completion_event.set()
     
 while True:

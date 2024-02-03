@@ -27,40 +27,63 @@ class Maze:
 
     def move_up(self):
         new_cell = self.check_cell(self.current_cell.x, self.current_cell.y - 1)
-        if new_cell is not None:
+        if new_cell is not None and 'up' in self.current_cell.legal_moves:
             self.current_cell = new_cell
+            return self.current_cell
+        return None
 
     def move_right(self):
         new_cell = self.check_cell(self.current_cell.x + 1, self.current_cell.y)
-        if new_cell is not None:
+        if new_cell is not None and 'right' in self.current_cell.legal_moves:
             self.current_cell = new_cell
+            return self.current_cell
+        return None
 
     def move_down(self):
         new_cell = self.check_cell(self.current_cell.x, self.current_cell.y + 1)
-        if new_cell is not None:
+        if new_cell is not None and 'down' in self.current_cell.legal_moves:
             self.current_cell = new_cell
+            return self.current_cell
+        return None
 
     def move_left(self):
         new_cell = self.check_cell(self.current_cell.x - 1, self.current_cell.y)
-        if new_cell is not None:
+        if new_cell is not None and 'left' in self.current_cell.legal_moves:
             self.current_cell = new_cell
+            return self.current_cell
+        return None
 
     def step(self, action):
         # Define action mappings to directions
         action_directions = {0: 'up', 1: 'right', 2: 'down', 3: 'left'}
         current_direction = action_directions.get(action)
 
-        # Check if the action is in the current cell's legal moves
+        # Initialize reward and done flag
+        reward = 0
+        done = False
+
+        # Perform the action if it's legal
         if current_direction in self.current_cell.legal_moves:
-            # Perform the action
-            if action == 0: 
-                self.move_up()
-            elif action == 1: 
-                self.move_right()
-            elif action == 2: 
-                self.move_down()
-            elif action == 3: 
-                self.move_left()
+            new_cell = None
+            if action == 0:
+                new_cell = self.move_up()
+            elif action == 1:
+                new_cell = self.move_right()
+            elif action == 2:
+                new_cell = self.move_down()
+            elif action == 3:
+                new_cell = self.move_left()
+            
+            if new_cell is not None:
+                self.current_cell = new_cell
+                if self.current_cell.visited:
+                    reward = -0.2  # Penalize for revisiting a cell
+                else:
+                    reward = -0.1  # Standard penalty for a move
+                    self.current_cell.visited = True  # Mark the cell as visited
+                if self.current_cell == self.goal_cell:
+                    reward = 1  # Reward for reaching the goal
+                    done = True
         else:
             # If the move is not legal, don't change the cell
             pass
@@ -71,7 +94,11 @@ class Maze:
         if done: 
             reward = 5
 
+        next_state = self.grid_cells.index(self.current_cell)
         return next_state, reward, done, self.current_cell
+
+
+
 
     def reset(self):
         self.current_cell = self.start_cell
