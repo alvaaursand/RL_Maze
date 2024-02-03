@@ -66,13 +66,17 @@ class Maze:
             pass
         next_state = self.grid_cells.index(self.current_cell)
         self.current_cell = self.grid_cells[next_state] 
-        reward = -0.1
+        reward = -0.01
         done = self.current_cell == self.goal_cell
         if done: 
-            reward = 3
+            reward = 5
 
         return next_state, reward, done, self.current_cell
 
     def reset(self):
         self.current_cell = self.start_cell
+        for cell in self.grid_cells:
+            cell.visits = 0 
+        for cell in self.grid_cells:
+            cell.visited = False
         return self.grid_cells.index(self.current_cell)

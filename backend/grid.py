@@ -12,6 +12,7 @@ class Cell:
         self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
         self.visited = False
         self.thickness = 4
+        self.visits=0
     
     def draw(self, sc):
         x, y = self.x * TILE, self.y * TILE
@@ -94,29 +95,4 @@ def remove_walls(current, next):
         current.remove_wall('bottom')
         next.remove_wall('top')
 
-"""def generate_maze():
-    grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
-    current_cell = grid_cells[0]
-    stack = []
-    break_count = 1
 
-    while break_count != len(grid_cells):
-        current_cell.visited = True
-        next_cell = current_cell.check_neighbors(grid_cells)
-        if next_cell:
-            next_cell.visited = True
-            break_count += 1
-            stack.append(current_cell)
-            remove_walls(current_cell, next_cell)
-            current_cell = next_cell
-        elif stack:
-            current_cell = stack.pop()
-
-    # Remove the left wall of the start cell and the right wall of the goal cell
-    start_cell = grid_cells[0]  # Assuming the start cell is the first cell
-    goal_cell = grid_cells[-1]  # Assuming the goal cell is the last cell
-    start_cell.walls['left'] = False
-    goal_cell.walls['right'] = False
-
-    return grid_cells
-"""

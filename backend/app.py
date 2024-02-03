@@ -3,7 +3,10 @@ from agent import CuriosityAgent
 from grid import *
 from maze import *
 import threading
+import random
 #get the window size of this computer
+
+
 
 class GUI:
     def __init__(self, display, maze_display, tile_size, agent_image):
@@ -11,6 +14,7 @@ class GUI:
         self.maze_display = maze_display
         self.tile_size = tile_size
         self.agent_image = agent_image
+        
 
     def update_gui(self, grid, agent_position):
         self.maze_display.fill(pygame.Color('black'))
@@ -67,7 +71,6 @@ button_size = (42, 42)  # Width, Height
 button_rect = pygame.Rect(*button_position, *button_size)
 button_image = pygame.image.load('./images/play.png')  # Load the button image
 button_image = pygame.transform.scale(button_image, (30, 30))
-arrow_size = TILE // 3
 
 maze_x = (LARGER_WIDTH - WIDTH) // 2
 maze_y = (LARGER_HEIGHT - HEIGHT) // 2
@@ -93,30 +96,16 @@ def draw_button(surface, position, size, color):
 
 
 
-"""def reset_maze():
-    global grid_cells, mazeMatrix, maze_complete
-    maze_complete = True
-    grid_cells = generate_maze()  # Generate a new maze
-    mazeMatrix = [[0] * cols for _ in range(rows)]  # Reset the maze matrix
-"""
+
+
     
 def draw_start_and_goal(maze_display):
     start_cell.walls['left'] = False
     goal_cell.walls['right'] = False
-    # Adjusted coordinates for the start arrow to point to the left
-    start_arrow = [(start_cell.x * TILE, start_cell.y * TILE),
-                   (start_cell.x * TILE + arrow_size, start_cell.y * TILE + TILE // 2),
-                   (start_cell.x * TILE, start_cell.y * TILE + TILE)]
-    goal_arrow = [(goal_cell.x * TILE + TILE - arrow_size, goal_cell.y * TILE),
-                  (goal_cell.x * TILE + TILE, goal_cell.y * TILE + TILE // 2),
-                  (goal_cell.x * TILE + TILE - arrow_size, goal_cell.y * TILE + TILE)]
-    # Marking the start and goal cell
-    pygame.draw.polygon(maze_display, pygame.Color('white'), start_arrow)
-    pygame.draw.polygon(maze_display, pygame.Color('white'), goal_arrow)
 
 training_started = False
 training_completed = False
-training_episodes = 100
+training_episodes = 2000
 optimal_path = []
 
 def train_agent_in_thread(agent, episodes, completion_event):
@@ -149,6 +138,7 @@ while True:
             if button_rect.collidepoint(mouse_pos) and not training_started:
                 # Start training in a separate thread
                 training_started = True
+                
     
     #new part
     if training_thread and training_completed_event.is_set():
@@ -205,24 +195,17 @@ while True:
             training_started = False   
             
         elif training_completed:
+            print("Training complete, now solving the maze...")
+       
             # The training has been completed, prepare for solving the maze
             #NULL IDE
-            """agent_present = True
-            agent_state = cols * start_cell.y + start_cell.x
-            agent.maze.current_cell = start_cell
-            agent_action = agent.act(agent_state)
-            new_state, reward, done, _ = agent.maze.step(agent_action)
-            agent.epsilon = 0 
-            #agent.update(agent_state, agent_action, reward, new_state, done) #kommenterer ut for redundant
-
-            agent_state = new_state"""
             
+            agent.solve(gui)
             training_completed = False
+            agent_present = False
             #print(optimal_path)
             # The training has been completed, prepare for solving the maze
-            
-        
-        if agent_present:
+        elif agent_present:  
             # Get the agent's next action
             agent_action = agent.act(agent_state)
             new_state, reward, done, _ = agent.maze.step(agent_action)
@@ -236,7 +219,15 @@ while True:
             # Update GUI with the current grid and agent position
             gui.update_gui(grid_cells, (agent_cell_x, agent_cell_y))
 
-            pygame.time.delay(100) #adding delay on agent
+            pygame.time.delay(50) #adding delay on agent
+        else: 
+            font = pygame.font.Font(None, 36)
+            text = font.render("Hurray, Yoda found the force!", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(gui.maze_display.get_width() // 2, gui.maze_display.get_height() // 2))
+            gui.maze_display.blit(text, text_rect)
+            
+        
+
 
 
             
